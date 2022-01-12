@@ -18,7 +18,6 @@ export class AuthResponse {
   @IsNotEmpty()
   token: string;
 
-  @IsString()
   @IsNotEmpty()
   user: User;
 }
