@@ -14,7 +14,7 @@ export class ProductService {
     return product;
   }
 
-  async findAll() {
+  async findAll(): Promise<Product[]> {
     const allMovies = await this.database.product.findMany();
     return allMovies;
   }
@@ -31,7 +31,7 @@ export class ProductService {
     return product;
   }
 
-  async update(id: string, data: UpdateProductDto) {
+  async update(id: string, data: UpdateProductDto): Promise<Product> {
     const checkProduct = await this.database.product.findUnique({
       where: { id },
     });
@@ -48,7 +48,11 @@ export class ProductService {
     return product;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} product`;
+  async remove(id: string): Promise<{ message: string }> {
+    await this.database.product.delete({
+      where: { id },
+    });
+
+    return { message: 'Product removed' };
   }
 }

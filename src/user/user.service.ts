@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { User } from '@prisma/client';
+import { Product, User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -43,7 +43,7 @@ export class UserService {
     return user;
   }
 
-  async update(user: User, data: UpdateUserDto) {
+  async update(user: User, data: UpdateUserDto): Promise<User> {
     const checkUser = await this.database.user.findUnique({
       where: { id: user.id },
     });
@@ -62,14 +62,28 @@ export class UserService {
     return upUser;
   }
 
-  async remove(id: string) {
+  async remove(id: string): Promise<{ message: string }> {
     await this.database.user.delete({
       where: { id },
     });
     return { message: 'We hope see you again' };
   }
 
-  async cart(user: User, productID: string) {
+  async getCart(user: User): Promise<Product[]> {
+    const consult = await this.database.user.findUnique({
+      where: { id: user.id },
+      include: {
+        cart: true,
+      },
+    });
+
+    return consult.cart;
+  }
+
+  async switchCart(
+    user: User,
+    productID: string,
+  ): Promise<{ message: string }> {
     const product = await this.database.product.findUnique({
       where: { id: productID },
     });
@@ -78,14 +92,8 @@ export class UserService {
       throw new NotFoundException('There is no product under this ID');
     }
 
-    const consult = await this.database.user.findUnique({
-      where: { id: user.id },
-      include: {
-        cart: true,
-      },
-    });
+    const cart = await this.getCart(user);
 
-    const cart = consult.cart;
     let foundProduct = false;
 
     cart.map((product) => {
