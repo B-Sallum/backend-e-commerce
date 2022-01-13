@@ -16,7 +16,7 @@ model User {
   email     String    @unique
   birthdate String
   pass      String
-  favorite  Product[]
+  cart      Product[]
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 }
@@ -27,7 +27,7 @@ model Product {
   price       String
   imgUrl      String
   description String
-  favorite    User[]
+  cart        User[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }

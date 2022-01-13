@@ -1,16 +1,18 @@
 import {
   Controller,
-  Get,
   Post,
   Body,
   Patch,
   Param,
   Delete,
+  UseGuards,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from '@prisma/client';
+import AuthUser from 'src/auth/auth-user.decorator';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('user')
 export class UserController {
@@ -21,19 +23,21 @@ export class UserController {
     return this.service.create(data);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.service.findOne(+id);
-  }
-
+  @UseGuards(AuthGuard())
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.service.update(+id, updateUserDto);
+  update(@AuthUser() user: User, @Body() data: UpdateUserDto) {
+    return this.service.update(user, data);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.service.remove(+id);
-    0;
+  @UseGuards(AuthGuard())
+  @Delete()
+  remove(@AuthUser() id: string) {
+    return this.service.remove(id);
+  }
+
+  @UseGuards(AuthGuard())
+  @Patch('/cart/:id')
+  addToCart(@AuthUser() user: User, @Param('id') productID: string) {
+    return this.service.cart(user, productID);
   }
 }

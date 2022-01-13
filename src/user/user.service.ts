@@ -2,6 +2,7 @@ import { PrismaService } from './../prisma.service';
 import {
   ConflictException,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -42,15 +43,89 @@ export class UserService {
     return user;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async update(user: User, data: UpdateUserDto) {
+    const checkUser = await this.database.user.findUnique({
+      where: { id: user.id },
+    });
+
+    if (!checkUser) {
+      throw new NotFoundException('User not found under this ID');
+    }
+
+    const upUser = await this.database.user.update({
+      where: { id: user.id },
+      data,
+    });
+
+    delete user.pass;
+
+    return upUser;
   }
 
-  update(id: number, data: UpdateUserDto) {
-    return `This action updates a #${id} user with this data ${data}`;
+  async remove(id: string) {
+    await this.database.user.delete({
+      where: { id },
+    });
+    return { message: 'We hope see you again' };
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async cart(user: User, productID: string) {
+    const product = await this.database.product.findUnique({
+      where: { id: productID },
+    });
+
+    if (!product) {
+      throw new NotFoundException('There is no product under this ID');
+    }
+
+    const consult = await this.database.user.findUnique({
+      where: { id: user.id },
+      include: {
+        cart: true,
+      },
+    });
+
+    const cart = consult.cart;
+    let foundProduct = false;
+
+    cart.map((product) => {
+      if (product.id === productID) {
+        foundProduct = true;
+      }
+    });
+
+    if (foundProduct) {
+      await this.database.user.update({
+        where: { id: user.id },
+        data: {
+          cart: {
+            disconnect: {
+              id: productID,
+            },
+          },
+        },
+        include: {
+          cart: true,
+        },
+      });
+
+      return { message: 'Item removed from the cart' };
+    } else {
+      await this.database.user.update({
+        where: { id: user.id },
+        data: {
+          cart: {
+            connect: {
+              id: productID,
+            },
+          },
+        },
+        include: {
+          cart: true,
+        },
+      });
+
+      return { message: 'Product added to Cart' };
+    }
   }
 }
