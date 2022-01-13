@@ -32,8 +32,8 @@ export class UserController {
 
   @UseGuards(AuthGuard())
   @Delete()
-  remove(@AuthUser() id: string): Promise<{ message: string }> {
-    return this.service.remove(id);
+  remove(@AuthUser() user: User): Promise<{ message: string }> {
+    return this.service.remove(user);
   }
 
   @UseGuards(AuthGuard())

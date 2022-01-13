@@ -62,9 +62,9 @@ export class UserService {
     return upUser;
   }
 
-  async remove(id: string): Promise<{ message: string }> {
+  async remove(user: User): Promise<{ message: string }> {
     await this.database.user.delete({
-      where: { id },
+      where: { id: user.id },
     });
     return { message: 'We hope see you again' };
   }
