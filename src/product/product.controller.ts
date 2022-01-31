@@ -14,33 +14,33 @@ import { Product } from '@prisma/client';
 
 @Controller('product')
 export class ProductController {
-  constructor(private readonly productService: ProductService) {}
+  constructor(private readonly service: ProductService) {}
 
   @Post('create')
   create(@Body() data: CreateProductDto): Promise<Product> {
-    return this.productService.create(data);
+    return this.service.create(data);
   }
 
   @Get('all')
   findAll(): Promise<Product[]> {
-    return this.productService.findAll();
+    return this.service.findAll();
   }
 
   @Get(':id')
   findOne(@Param('id') id: string): Promise<Product> {
-    return this.productService.findOne(id);
+    return this.service.findOne(id);
   }
 
   @Patch(':id')
   update(
     @Param('id') id: string,
-    @Body() updateProductDto: UpdateProductDto,
+    @Body() data: UpdateProductDto,
   ): Promise<Product> {
-    return this.productService.update(id, updateProductDto);
+    return this.service.update(id, data);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string): Promise<{ message: string }> {
-    return this.productService.remove(id);
+    return this.service.remove(id);
   }
 }
